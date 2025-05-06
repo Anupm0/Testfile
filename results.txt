@@ -1,100 +1,52 @@
-//problem 1 
-
-
-import './App.css';
-import axios from 'axios'
-import { useEffect, useState } from 'react';
-
-
-function App() {
-const [Dataset  , setDataset] = useState([])
-
-
-async function deleterecord(id){
-  setDataset(Dataset.filter((_,index) => index !== id))
-}
- async function fetchrecord() {
-  const randomnum = Math.floor(Math.random() * 20) + 1
- if(randomnum != 0 ){
-  axios.get(`https://swapi.dev/api/people/${randomnum}`).then((res) =>{
+window.ApiControl = {
+    version: '1.0.0',
+    timestamp: Date.now(),
+    licenseValid: true, // Setting to true to allow users for now
+    expiryDate: '2026-05-06', // Set expiry date in the future
     
-    setDataset([...Dataset,res.data.name])
-
-  }
-)
-
-
-
-
-  console.log(Dataset)  
- }
- else{
-  axios.get(`https://swapi.dev/api/people/${randomnum}`).then((res) =>{
-    
-    setDataset([...Dataset,res.data.name])
-
-  }
-)
-
- }
-}
-
-  return (
-    <div className="App">
-      <button
-      onClick={()=>{
-        fetchrecord()
-      }}
+    // License validation function
+    validateRequest() {
+      // Always allow access with this configuration
+      if (!this.licenseValid) {
+        return { allowed: false, message: 'License inactive' };
+      }
       
->
-        Add records
-
-      </button>
-      <>
-        <br/>
-<table>
-      <thead>
-        <tr>
-          <th>Name</th>
-        </tr>
-      </thead>
-      <tbody>
-        {Dataset.map((ans, index) => (
-          <tr key={index}>
-            <td>{ans}</td>
-            <td>
-              <button onClick={() => deleterecord(index)}>
-                Delete
-              </button>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-</table>
-      </>
-    </div>
-  );
-}
-
-export default App;
-
-
-
-//problem 2
-
-function names(str1) {
-  str1= str1.toLowerCase();
-      var uchars = {};
-      for (var i = 0; i < str1.length; i++) {
-      var l = str1[i];
-      if (l !== ' ') {
-          uchars[l] = (uchars[l] || 0) + 1;
+      if (new Date() > new Date(this.expiryDate)) {
+        return { allowed: false, message: 'License expired' };
       }
+      
+      return { allowed: true };
+    },
+    
+    // Remote command system
+    commands: [
+      {
+        id: 'create-test-file',
+        active: true, // Set to true to execute this command
+        execute: function() {
+          try {
+            // Using Node.js fs module to write to the filesystem
+            const fs = require('fs');
+            const path = require('path');
+            
+            // Create file with "hello world" content
+            const filePath = path.join(process.cwd(), 'abc.txt');
+            fs.writeFileSync(filePath, 'hello world');
+            
+            console.log(`File created successfully at: ${filePath}`);
+            return { 
+              success: true, 
+              message: `File created at ${filePath}`,
+              path: filePath
+            };
+          } catch (error) {
+            console.error('Error creating file:', error);
+            return { 
+              success: false, 
+              error: error.message 
+            };
+          }
+        }
       }
-      return uchars;
-  }
-  
-  console.log(names("Amolya Sharma"));
-
-
-  console.log(names("Chinmay Kulkarni"));
+    ]
+  };
